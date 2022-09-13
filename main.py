@@ -15,7 +15,7 @@ FEED_URL = "https://rpilocator.com/feed/"
 
 # User Agent
 USER_AGENT = "DiscordPi feed alert"
-CHANNEL_ID = 0
+CHANNEL_ID = 1019198548149022720
 
 # Create the message body
 def formatMessage(entry):
