@@ -1,8 +1,0 @@
-INITIAL_WAIT_TIME: 30
-DEFAULT_WAIT_TIME: 30
-TOKEN_FILE_NAME: "token.txt"
-CONTROL_FILE: "control.json"
-MESSAGE_TITLE: "New Raspberry Pi found!"
-FEED_URL: "https://rpilocator.com/feed/?country=DE&cat=CM4,PI4,PIZERO"
-USER_AGENT: "DiscordPi feed alert"
-CHANNEL_ID: 1019198548149022720
