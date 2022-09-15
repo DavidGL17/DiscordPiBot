@@ -1,0 +1,11 @@
+# build the docker file, create a container and run it, create a volume for the config files to be placed at the root of the app folder
+version: '3'
+services:
+  app:
+    build: .
+    container_name: DiscordBot
+    volumes:
+      - .:/app
+    restart: unless-stopped
+volumes:
+  app:
