@@ -6,6 +6,11 @@ import discord
 from discord.ext import tasks
 from settingsModule import Settings
 
+
+# Import settings and token from config files
+settings = Settings()
+
+
 ##
 ## Setup functions
 ##
@@ -66,10 +71,6 @@ async def on_ready():
 
 # Main program
 
-# Import settings and token from config files
-settings = Settings()
-TOKEN = open(settings.TOKEN_FILE_NAME, "r").read()
-
 # Activate the discord client
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
@@ -96,4 +97,4 @@ if not os.path.isfile(settings.CONTROL_FILE):
     # Only wait 30 seconds after initial run.
     time.sleep(settings.INITIAL_WAIT_TIME)
 
-client.run(TOKEN)
+client.run(settings.TOKEN)

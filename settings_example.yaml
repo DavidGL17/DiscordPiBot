@@ -4,4 +4,4 @@ CONTROL_FILE: "control.json"
 FEED_URL: "https://rpilocator.com/feed/?country=CH&cat=CM4,PI4,PIZERO"
 USER_AGENT: "DiscordPi feed alert"
 CHANNEL_ID: 1
-token: "Your token"
+TOKEN: "Your token"
