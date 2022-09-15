@@ -6,11 +6,12 @@ A discord bot i use to warn me about different things. It currently warns me abo
 
 # Installation
 
--   First install all requirements with pip
--   Then set the token.txt file with your personal bot token and the correct rss feed url in the main.py file
--   Launch the program!
+-   First install all requirements with pip (`pip install -r requirements.txt`)
+-   Then set the settings.yaml file with all your personnal info. You can use [the example file](settings_example.yaml) as a reference. You need to set mainly :
+    -   Your token id for your bot
+    -   The channel id where you want the bot to send messages
+-   Launch the program using docker, docker compose (`docker-compose up -d --build`) or directly with python (`python3 main.py`)
 
-# Improvements being made :
+# Improvements being made/to do :
 
--   I need to make a nice messaging format for when there are new pis available
--   ideally all settings could be in a single file (json or yaml)
+-   Warn when an item is no longer available. Not really a priority but it would be nice to have
