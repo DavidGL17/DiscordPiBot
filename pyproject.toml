@@ -6,7 +6,7 @@ authors = ["DavidGL17 <david.gonzalez@citycable.ch>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.9"
 discord = "^1.7.3"
 feedparser = "^6.0.8"
 pyyaml = "^6.0"

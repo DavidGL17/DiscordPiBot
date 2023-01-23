@@ -5,3 +5,4 @@ control.json
 __pycache__
 .pytest_cache
 discordpibot.log
+poetry.lock
