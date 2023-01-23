@@ -1,0 +1,18 @@
+---
+# Setup linting for python code in app and tests folder using flake8 and poetry
+name: Lint
+on : [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Lint with flake8
+        run: poetry run flake8 discordpibot tests
