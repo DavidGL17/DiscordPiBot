@@ -5,9 +5,6 @@ description = ""
 authors = ["DavidGL17 <david.gonzalez@citycable.ch>"]
 readme = "README.md"
 
-[tool.poetry.virtualenvs]
-in-project = true
-
 [tool.poetry.dependencies]
 python = "^3.9"
 discord = "^1.7.3"
