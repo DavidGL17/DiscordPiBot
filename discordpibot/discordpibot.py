@@ -2,6 +2,7 @@ import feedparser
 import time
 import json
 import os
+import logging
 import discord
 from discord.ext import tasks
 from discordpibot.settingsModule import Settings
@@ -11,20 +12,27 @@ from discordpibot.entry import Entry, field_names, EntryEncoder
 # Import settings and token from config files
 settings = Settings()
 
+# Logging
+
+# configure the file handler
+file_handler = logging.FileHandler("discordpibot.log", mode="w")
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(logging.Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s"))
+
+# configure the stream handler
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)
+stream_handler.setFormatter(logging.Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s"))
+
+# create the logger object
+logger = logging.getLogger("discordpibot")
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
+logger.setLevel(logging.DEBUG)
 
 ##
 # Setup functions
 ##
-
-# Create the message body
-def formatMessage(entry, isNew=True):
-    if isNew:
-        message = f"Alert, new item available\n{entry.title}\n{entry.link}"
-    else:
-        message = f"Alert, this item is no longer available\n{entry.title}\n{entry.link}"
-        pass
-
-    return message
 
 
 def prepareMessage(added_products, removed_products, current_products):
@@ -52,7 +60,7 @@ def prepareMessage(added_products, removed_products, current_products):
 
 @tasks.loop(seconds=settings._settings["DEFAULT_WAIT_TIME"])
 async def feedWatcher():
-    print("Starting feed check...")
+    logger.info("Starting feed check...")
     # Read the control list
     with open(settings._settings["CONTROL_FILE"], "r") as controlFile:
         json_data = json.load(controlFile)
@@ -83,8 +91,10 @@ async def feedWatcher():
     # Write the new control list to the control file
     with open(settings._settings["CONTROL_FILE"], "w") as controlFile:
         json.dump(prev_products, controlFile, indent=4, cls=EntryEncoder)
-    print(f"Checking done! warned for {len(added_products)} new items, and {len(removed_products)} removed items.")
-    print(
+    logger.info(
+        f"Checking done! warned for {len(added_products)} new items, and {len(removed_products)} removed items."
+    )
+    logger.info(
         f"Next check at {time.strftime('%H:%M:%S', time.localtime(time.time() + settings._settings['DEFAULT_WAIT_TIME']))}"
     )
 
@@ -96,7 +106,7 @@ client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
-    print(f"{client.user} has connected to Discord!")
+    logger.info(f"{client.user} has connected to Discord!")
     # Start the feed watcher
     feedWatcher.start()
 
@@ -105,7 +115,7 @@ async def on_ready():
 def main():
     # Setup the control list if it does not exist
     if not os.path.isfile(settings._settings["CONTROL_FILE"]):
-        print("Doing initial setup...")
+        logger.info("Doing initial setup...")
         # Set control to blank list
         control = {}
 
@@ -116,7 +126,7 @@ def main():
         # Only wait 30 seconds after initial run.
         time.sleep(settings._settings["INITIAL_WAIT_TIME"])
 
-    print("Starting feed check App...")
+    logger.info("Starting feed check App...")
     client.run(settings._settings["TOKEN"])
 
 
