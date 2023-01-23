@@ -1,5 +1,5 @@
 .vscode/
 settings.yaml
 control.json
-.piBot
+.venv
 __pycache__

@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "discordpibot"
+version = "0.1.0"
+description = ""
+authors = ["DavidGL17 <david.gonzalez@citycable.ch>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+discord = "^1.7.3"
+feedparser = "^6.0.8"
+pyyaml = "^6.0"
+
+[tool.poetry.scripts]
+discordpibot = "discordpibot:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
