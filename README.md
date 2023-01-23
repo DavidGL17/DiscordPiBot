@@ -6,7 +6,7 @@ A discord bot i use to warn me about different things. It currently warns me abo
 
 # Installation
 
--   First install all requirements with pip (`pip install -r requirements.txt`)
+-   First install all requirements with poetry (`poetry install`)
 -   Then set the settings.yaml file with all your personnal info. You can use [the example file](settings_example.yaml) as a reference. You need to set mainly :
     -   Your token id for your bot
     -   The channel id where you want the bot to send messages

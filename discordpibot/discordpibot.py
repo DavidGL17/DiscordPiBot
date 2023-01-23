@@ -13,7 +13,7 @@ settings = Settings()
 
 
 ##
-## Setup functions
+# Setup functions
 ##
 
 # Create the message body
@@ -21,12 +21,11 @@ def formatMessage(entry, isNew=True):
     if isNew:
         message = f"Alert, new item available\n{entry.title}\n{entry.link}"
     else:
-        message = (
-            f"Alert, this item is no longer available\n{entry.title}\n{entry.link}"
-        )
+        message = f"Alert, this item is no longer available\n{entry.title}\n{entry.link}"
         pass
 
     return message
+
 
 def prepareMessage(added_products, removed_products, current_products):
     # Send one big message with all the new products, removed products, and current products, as a sort of update on the current state of the feed.
@@ -51,23 +50,22 @@ def prepareMessage(added_products, removed_products, current_products):
     return message
 
 
-
-@tasks.loop(seconds=settings._settings['DEFAULT_WAIT_TIME'])
+@tasks.loop(seconds=settings._settings["DEFAULT_WAIT_TIME"])
 async def feedWatcher():
     print("Starting feed check...")
     # Read the control list
-    with open(settings._settings['CONTROL_FILE'], "r") as controlFile:
+    with open(settings._settings["CONTROL_FILE"], "r") as controlFile:
         json_data = json.load(controlFile)
         prev_products = {k: Entry(**json_data[k]) for k in json_data}
 
     # Fetch the feed again, and again, and again...
-    f = feedparser.parse(settings._settings['FEED_URL'], agent=settings._settings['USER_AGENT'])
+    f = feedparser.parse(settings._settings["FEED_URL"], agent=settings._settings["USER_AGENT"])
 
     # Compare feed entries to control list.
     # If there are new entries, send a message/push
     # and add the new entry to new control list.
     # TODO remove this line once code is working
-    await client.get_channel(settings._settings['CHANNEL_ID']).send("Checking feed...")
+    await client.get_channel(settings._settings["CHANNEL_ID"]).send("Checking feed...")
 
     current_products = {}
     # Convert the JSON array to a list of Product objects
@@ -79,19 +77,22 @@ async def feedWatcher():
     removed_products = {k: v for k, v in prev_products.items() if k not in current_products}
     message = prepareMessage(added_products, removed_products, current_products)
     if message:
-        await client.get_channel(settings._settings['CHANNEL_ID']).send(message)
+        await client.get_channel(settings._settings["CHANNEL_ID"]).send(message)
     prev_products = current_products
 
     # Write the new control list to the control file
-    with open(settings._settings['CONTROL_FILE'], "w") as controlFile:
+    with open(settings._settings["CONTROL_FILE"], "w") as controlFile:
         json.dump(prev_products, controlFile, indent=4, cls=EntryEncoder)
     print(f"Checking done! warned for {len(added_products)} new items, and {len(removed_products)} removed items.")
-    print(f"Next check at {time.strftime('%H:%M:%S', time.localtime(time.time() + settings._settings['DEFAULT_WAIT_TIME']))}")
+    print(
+        f"Next check at {time.strftime('%H:%M:%S', time.localtime(time.time() + settings._settings['DEFAULT_WAIT_TIME']))}"
+    )
 
 
 # Activate the discord client
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
+
 
 @client.event
 async def on_ready():
@@ -103,20 +104,21 @@ async def on_ready():
 # Main program
 def main():
     # Setup the control list if it does not exist
-    if not os.path.isfile(settings._settings['CONTROL_FILE']):
+    if not os.path.isfile(settings._settings["CONTROL_FILE"]):
         print("Doing initial setup...")
         # Set control to blank list
         control = {}
 
         # Write the list to a json file for later use
-        with open(settings._settings['CONTROL_FILE'], "w") as outfile:
+        with open(settings._settings["CONTROL_FILE"], "w") as outfile:
             json.dump(control, outfile)
 
         # Only wait 30 seconds after initial run.
-        time.sleep(settings._settings['INITIAL_WAIT_TIME'])
+        time.sleep(settings._settings["INITIAL_WAIT_TIME"])
 
     print("Starting feed check App...")
-    client.run(settings._settings['TOKEN'])
+    client.run(settings._settings["TOKEN"])
+
 
 if __name__ == "__main__":
     main()

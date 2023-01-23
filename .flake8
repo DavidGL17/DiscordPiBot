@@ -1,0 +1,5 @@
+[flake8]
+extend-ignore =
+        E501 # line too long
+        SFS301 # Ignore f-strings, we like them:
+        E731 # do not assign a lambda expression, use a def
