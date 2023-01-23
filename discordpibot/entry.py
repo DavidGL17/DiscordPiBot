@@ -20,7 +20,3 @@ class EntryEncoder(json.JSONEncoder):
 
 
 field_names = [field.name for field in fields(Entry)]
-
-
-def entryFromFeedparserEntry(entry) -> Entry:
-    return Entry(entry.title, entry.link, entry.id)

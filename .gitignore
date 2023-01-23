@@ -4,3 +4,4 @@ control.json
 .venv
 __pycache__
 .pytest_cache
+discordpibot.log
