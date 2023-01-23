@@ -92,7 +92,7 @@ async def feedWatcher():
     with open(settings._settings["CONTROL_FILE"], "w") as controlFile:
         json.dump(prev_products, controlFile, indent=4, cls=EntryEncoder)
     logger.info(
-        f"Checking done! warned for {len(added_products)} new items, and {len(removed_products)} removed items."
+        f"Checking done! warned for {len(added_products)} new items, and {len(removed_products)} removed items. Currently have {len(current_products)} items."
     )
     logger.info(
         f"Next check at {time.strftime('%H:%M:%S', time.localtime(time.time() + settings._settings['DEFAULT_WAIT_TIME']))}"
