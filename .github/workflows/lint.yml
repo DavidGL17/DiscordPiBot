@@ -1,7 +1,12 @@
 ---
 # Setup linting for python code in app and tests folder using flake8 and poetry
 name: Lint
-on : [push, pull_request]
+# only run on master and pull requests
+on : 
+  pull_request:
+  push:
+    branches:
+      - master
 jobs:
   lint:
     runs-on: ubuntu-latest
