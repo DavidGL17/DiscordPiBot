@@ -4,8 +4,8 @@ import json
 import os
 import discord
 from discord.ext import tasks
-from settingsModule import Settings
-from entry import Entry, field_names, EntryEncoder
+from discordpibot.settingsModule import Settings
+from discordpibot.entry import Entry, field_names, EntryEncoder
 
 
 # Import settings and token from config files
@@ -89,8 +89,6 @@ async def feedWatcher():
     print(f"Next check at {time.strftime('%H:%M:%S', time.localtime(time.time() + settings._settings['DEFAULT_WAIT_TIME']))}")
 
 
-# Main program
-
 # Activate the discord client
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
@@ -101,17 +99,24 @@ async def on_ready():
     # Start the feed watcher
     feedWatcher.start()
 
-# Setup the control list if it does not exist
-if not os.path.isfile(settings._settings['CONTROL_FILE']):
-    print("Doing initial setup...")
-    # Set control to blank list
-    control = {}
 
-    # Write the list to a json file for later use
-    with open(settings._settings['CONTROL_FILE'], "w") as outfile:
-        json.dump(control, outfile)
+# Main program
+def main():
+    # Setup the control list if it does not exist
+    if not os.path.isfile(settings._settings['CONTROL_FILE']):
+        print("Doing initial setup...")
+        # Set control to blank list
+        control = {}
 
-    # Only wait 30 seconds after initial run.
-    time.sleep(settings._settings['INITIAL_WAIT_TIME'])
+        # Write the list to a json file for later use
+        with open(settings._settings['CONTROL_FILE'], "w") as outfile:
+            json.dump(control, outfile)
 
-client.run(settings._settings['TOKEN'])
+        # Only wait 30 seconds after initial run.
+        time.sleep(settings._settings['INITIAL_WAIT_TIME'])
+
+    print("Starting feed check App...")
+    client.run(settings._settings['TOKEN'])
+
+if __name__ == "__main__":
+    main()
