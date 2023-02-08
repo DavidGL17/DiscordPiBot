@@ -5,7 +5,5 @@ services:
     build: .
     container_name: DiscordBot
     volumes:
-      - .:/app
+      - ./settings.yaml:/app/settings.yaml
     restart: unless-stopped
-volumes:
-  app:
