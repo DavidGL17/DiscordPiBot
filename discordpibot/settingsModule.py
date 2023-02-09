@@ -2,7 +2,7 @@ import yaml
 
 # Settings
 
-with open("config.yaml", "r") as f:
+with open("settings.yaml", "r") as f:
     config = yaml.safe_load(f)
 
 cron_string = config["cron_string"]

@@ -1,8 +1,14 @@
+"""
+A cron scheduler module, the compute_next_run function computes the next time a cron expression will be true.
+Only supports basic cron expressions for now, so no ranges or steps.
+"""
 import re
 import datetime
 
+# TODO add more cron expressions
 
-def compute_next_run(cron_expression: str, current_time: datetime.datetime = None):
+
+def compute_next_run(cron_expression: str, current_time: datetime.datetime = None) -> datetime.datetime:
     if current_time is None:
         current_time = datetime.datetime.now()
 

@@ -1,12 +1,13 @@
 import feedparser
 import time
+import asyncio
 import json
 import os
 import logging
 import discord
-from discord.ext import tasks
-from discordpibot.settingsModule import cron_string, control_file, feed_url, user_agent, channel_id, token
-from discordpibot.entry import Entry, field_names, EntryEncoder
+from .settingsModule import cron_string, control_file, feed_url, user_agent, channel_id, token
+from .entry import Entry, field_names, EntryEncoder
+from .cronScheduler import compute_next_run
 
 
 # Logging
@@ -35,8 +36,9 @@ logger.setLevel(logging.DEBUG)
 def prepareMessage(added_products, removed_products, current_products):
     # Send one big message with all the new products, removed products, and current products, as a sort of update on the current state of the feed.
     # If there is nothing to report, return a string that indicates that
+    next_update = compute_next_run(cron_string)
     if not added_products and not removed_products and not current_products:
-        return f"No changes to report.\n Next update at {time.strftime('%H:%M:%S', time.localtime(time.time() + settings._settings['DEFAULT_WAIT_TIME']))}"
+        return f"No changes to report.\n Next update at {next_update.strftime('%d.%m %H:%M')}"
     message = "Scanning the feed for updates, here is the current state:\n"
     if added_products:
         message += "New entries:\n"
@@ -51,7 +53,8 @@ def prepareMessage(added_products, removed_products, current_products):
         for product in current_products.values():
             message += f"{product.title}\n{product.link}\n"
     # add next update time (not in seconds but the actual time)
-    message += f"Next update at {time.strftime('%H:%M:%S', time.localtime(time.time() + settings._settings['DEFAULT_WAIT_TIME']))}"
+    # print next update time, full (so day.month, hour:minute)
+    message += f"Next update at {next_update.strftime('%d.%m %H:%M')}"
     return message
 
 
@@ -90,9 +93,8 @@ async def feedWatcher():
     logger.info(
         f"Checking done! warned for {len(added_products)} new items, and {len(removed_products)} removed items. Currently have {len(current_products)} items."
     )
-    logger.info(
-        f"Next check at {time.strftime('%H:%M:%S', time.localtime(time.time() + settings._settings['DEFAULT_WAIT_TIME']))}"
-    )
+    next_update = compute_next_run(cron_string)
+    logger.info(f"Next check at {next_update.strftime('%d.%m %H:%M')}")
 
 
 # Activate the discord client
@@ -107,7 +109,10 @@ async def on_ready():
     try:
         while True:
             await feedWatcher()
-            # compute the time to wait until the next check
+            next_update = compute_next_run(cron_string)
+            logger.info(f"Main func Sleeping until {next_update.strftime('%d.%m %H:%M')}")
+            await asyncio.sleep(next_update.timestamp() - time.time())
+
     except Exception as e:
         logger.error(f"Error in feedWatcher: {e}")
 
