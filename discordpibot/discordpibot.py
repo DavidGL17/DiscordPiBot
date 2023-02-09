@@ -5,12 +5,9 @@ import os
 import logging
 import discord
 from discord.ext import tasks
-from discordpibot.settingsModule import Settings
+from discordpibot.settingsModule import cron_string, control_file, feed_url, user_agent, channel_id, token
 from discordpibot.entry import Entry, field_names, EntryEncoder
 
-
-# Import settings and token from config files
-settings = Settings()
 
 # Logging
 
@@ -58,22 +55,21 @@ def prepareMessage(added_products, removed_products, current_products):
     return message
 
 
-@tasks.loop(seconds=settings._settings["DEFAULT_WAIT_TIME"])
 async def feedWatcher():
     logger.info("Starting feed check...")
     # Read the control list
-    with open(settings._settings["CONTROL_FILE"], "r") as controlFile:
+    with open(control_file, "r") as controlFile:
         json_data = json.load(controlFile)
         prev_products = {k: Entry(**json_data[k]) for k in json_data}
 
     # Fetch the feed again, and again, and again...
-    f = feedparser.parse(settings._settings["FEED_URL"], agent=settings._settings["USER_AGENT"])
+    f = feedparser.parse(feed_url, agent=user_agent)
 
     # Compare feed entries to control list.
     # If there are new entries, send a message/push
     # and add the new entry to new control list.
     # TODO remove this line once code is working
-    await client.get_channel(settings._settings["CHANNEL_ID"]).send("Checking feed...")
+    await client.get_channel(channel_id).send("Checking feed...")
 
     current_products = {}
     # Convert the JSON array to a list of Product objects
@@ -85,11 +81,11 @@ async def feedWatcher():
     removed_products = {k: v for k, v in prev_products.items() if k not in current_products}
     message = prepareMessage(added_products, removed_products, current_products)
     if message:
-        await client.get_channel(settings._settings["CHANNEL_ID"]).send(message)
+        await client.get_channel(channel_id).send(message)
     prev_products = current_products
 
     # Write the new control list to the control file
-    with open(settings._settings["CONTROL_FILE"], "w") as controlFile:
+    with open(control_file, "w") as controlFile:
         json.dump(prev_products, controlFile, indent=4, cls=EntryEncoder)
     logger.info(
         f"Checking done! warned for {len(added_products)} new items, and {len(removed_products)} removed items. Currently have {len(current_products)} items."
@@ -107,27 +103,29 @@ client = discord.Client(intents=intents)
 @client.event
 async def on_ready():
     logger.info(f"{client.user} has connected to Discord!")
-    # Start the feed watcher
-    feedWatcher.start()
+    # Start the loop
+    try:
+        while True:
+            await feedWatcher()
+            # compute the time to wait until the next check
+    except Exception as e:
+        logger.error(f"Error in feedWatcher: {e}")
 
 
 # Main program
 def main():
     # Setup the control list if it does not exist
-    if not os.path.isfile(settings._settings["CONTROL_FILE"]):
+    if not os.path.isfile(control_file):
         logger.info("Doing initial setup...")
         # Set control to blank list
         control = {}
 
         # Write the list to a json file for later use
-        with open(settings._settings["CONTROL_FILE"], "w") as outfile:
+        with open(control_file, "w") as outfile:
             json.dump(control, outfile)
 
-        # Only wait 30 seconds after initial run.
-        time.sleep(settings._settings["INITIAL_WAIT_TIME"])
-
     logger.info("Starting feed check App...")
-    client.run(settings._settings["TOKEN"])
+    client.run(token)
 
 
 if __name__ == "__main__":
