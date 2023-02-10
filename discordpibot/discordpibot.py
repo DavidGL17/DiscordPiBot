@@ -3,40 +3,23 @@ import time
 import asyncio
 import json
 import os
-import logging
 import discord
 from .settingsModule import cron_string, control_file, feed_url, user_agent, channel_id, token
+from .logging import logger
 from .entry import Entry, field_names, EntryEncoder
-from .cronScheduler import compute_next_run
+from croniter import croniter
+from datetime import datetime
 
-
-# Logging
-
-# configure the file handler
-file_handler = logging.FileHandler("discordpibot.log", mode="w")
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(logging.Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s"))
-
-# configure the stream handler
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.INFO)
-stream_handler.setFormatter(logging.Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s"))
-
-# create the logger object
-logger = logging.getLogger("discordpibot")
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
-logger.setLevel(logging.DEBUG)
 
 ##
 # Setup functions
 ##
 
 
-def prepareMessage(added_products, removed_products, current_products):
+def prepareMessage(added_products: dict, removed_products: dict, current_products: dict, next_update: datetime) -> str:
     # Send one big message with all the new products, removed products, and current products, as a sort of update on the current state of the feed.
     # If there is nothing to report, return a string that indicates that
-    next_update = compute_next_run(cron_string)
+
     if not added_products and not removed_products and not current_products:
         return f"No changes to report.\n Next update at {next_update.strftime('%d.%m %H:%M')}"
     message = "Scanning the feed for updates, here is the current state:\n"
@@ -58,7 +41,7 @@ def prepareMessage(added_products, removed_products, current_products):
     return message
 
 
-async def feedWatcher():
+async def feedWatcher(next_update: datetime):
     logger.info("Starting feed check...")
     # Read the control list
     with open(control_file, "r") as controlFile:
@@ -82,7 +65,7 @@ async def feedWatcher():
         current_products[product.id] = product
     added_products = {k: v for k, v in current_products.items() if k not in prev_products}
     removed_products = {k: v for k, v in prev_products.items() if k not in current_products}
-    message = prepareMessage(added_products, removed_products, current_products)
+    message = prepareMessage(added_products, removed_products, current_products, next_update)
     if message:
         await client.get_channel(channel_id).send(message)
     prev_products = current_products
@@ -93,7 +76,6 @@ async def feedWatcher():
     logger.info(
         f"Checking done! warned for {len(added_products)} new items, and {len(removed_products)} removed items. Currently have {len(current_products)} items."
     )
-    next_update = compute_next_run(cron_string)
     logger.info(f"Next check at {next_update.strftime('%d.%m %H:%M')}")
 
 
@@ -108,8 +90,9 @@ async def on_ready():
     # Start the loop
     try:
         while True:
-            await feedWatcher()
-            next_update = compute_next_run(cron_string)
+            iter = croniter(cron_string, datetime.now())
+            next_update = iter.get_next(datetime)
+            await feedWatcher(next_update)
             logger.info(f"Main func Sleeping until {next_update.strftime('%d.%m %H:%M')}")
             await asyncio.sleep(next_update.timestamp() - time.time())
 

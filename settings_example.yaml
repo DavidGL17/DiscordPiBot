@@ -1,6 +1,16 @@
+# App settings
+
+# General
 cron_string: "*/5 * * * *"
 control_file: "control.json"
+
+# Raspberry Pi Locator feed
 feed_url: "https://rpilocator.com/feed/?country=CH&cat=CM4,PI4,PIZERO"
 user_agent: "DiscordPi feed alert"
+
+# discord
 channel_id: 1
 token: "Your token"
+
+# Logging
+log_file: "discordpi.log"
