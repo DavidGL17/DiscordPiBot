@@ -2,11 +2,13 @@ import yaml
 
 # Settings
 
+with open("settings.yaml", "r") as f:
+    config = yaml.safe_load(f)
 
-class Settings:
-    def __init__(self):
-        self._settings = self._load_settings()
-
-    def _load_settings(self):
-        with open("settings.yaml", "r") as f:
-            return yaml.safe_load(f)
+cron_string = config["cron_string"]
+control_file = config["control_file"]
+feed_url = config["feed_url"]
+user_agent = config["user_agent"]
+channel_id = config["channel_id"]
+token = config["token"]
+log_file = config["log_file"]

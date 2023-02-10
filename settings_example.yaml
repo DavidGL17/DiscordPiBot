@@ -1,7 +1,16 @@
-INITIAL_WAIT_TIME: 30
-DEFAULT_WAIT_TIME: 3600
-CONTROL_FILE: "control.json"
-FEED_URL: "https://rpilocator.com/feed/?country=CH&cat=CM4,PI4,PIZERO"
-USER_AGENT: "DiscordPi feed alert"
-CHANNEL_ID: 1
-TOKEN: "Your token"
+# App settings
+
+# General
+cron_string: "*/5 * * * *"
+control_file: "control.json"
+
+# Raspberry Pi Locator feed
+feed_url: "https://rpilocator.com/feed/?country=CH&cat=CM4,PI4,PIZERO"
+user_agent: "DiscordPi feed alert"
+
+# discord
+channel_id: 1
+token: "Your token"
+
+# Logging
+log_file: "discordpi.log"
