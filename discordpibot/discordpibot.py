@@ -4,7 +4,7 @@ import asyncio
 import json
 import os
 import discord
-from .settingsModule import cron_string, control_file, feed_url, user_agent, channel_id, token
+from .settingsModule import cron_string, control_file, feed_url, user_agent, channel_id, token, timezone
 from .logging import logger
 from .entry import Entry, field_names, EntryEncoder
 from croniter import croniter
@@ -37,7 +37,7 @@ def prepareMessage(added_products: dict, removed_products: dict, current_product
             message += f"{product.title}\n{product.link}\n"
     # add next update time (not in seconds but the actual time)
     # print next update time, full (so day.month, hour:minute)
-    message += f"Next update at {next_update.strftime('%d.%m %H:%M')}"
+    message += f"Next update at {next_update.strftime('%H:%M %Z on the %d.%m')}"
     return message
 
 
@@ -76,7 +76,8 @@ async def feedWatcher(next_update: datetime):
     logger.info(
         f"Checking done! warned for {len(added_products)} new items, and {len(removed_products)} removed items. Currently have {len(current_products)} items."
     )
-    logger.info(f"Next check at {next_update.strftime('%d.%m %H:%M')}")
+    # print next update time, full info (hour:minute timezone on the day.month)
+    logger.info(f"Next check at {next_update.strftime('%H:%M %Z on the %d.%m')}")
 
 
 # Activate the discord client
@@ -87,17 +88,17 @@ client = discord.Client(intents=intents)
 @client.event
 async def on_ready():
     logger.info(f"{client.user} has connected to Discord!")
-    iter = croniter(cron_string, datetime.now())
+    iter = croniter(cron_string, datetime.now(tz=timezone))
     next_update = iter.get_next(datetime)
-    logger.info(f"Next update at {next_update.strftime('%d.%m %H:%M')}")
+    logger.info(f"Next update at {next_update.strftime('%H:%M %Z on the %d.%m')}")
     await asyncio.sleep(next_update.timestamp() - time.time())
     # Start the loop
     try:
         while True:
-            iter = croniter(cron_string, datetime.now())
+            iter = croniter(cron_string, datetime.now(tz=timezone))
             next_update = iter.get_next(datetime)
             await feedWatcher(next_update)
-            logger.info(f"Main func Sleeping until {next_update.strftime('%d.%m %H:%M')}")
+            logger.info(f"Main func Sleeping until {next_update.strftime('%H:%M %Z on the %d.%m')}")
             await asyncio.sleep(next_update.timestamp() - time.time())
 
     except Exception as e:

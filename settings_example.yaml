@@ -2,6 +2,7 @@
 
 # General
 cron_string: "*/5 * * * *"
+timezone: "Europe/Zurich"
 control_file: "control.json"
 
 # Raspberry Pi Locator feed
