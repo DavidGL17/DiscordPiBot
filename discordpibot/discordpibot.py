@@ -87,6 +87,10 @@ client = discord.Client(intents=intents)
 @client.event
 async def on_ready():
     logger.info(f"{client.user} has connected to Discord!")
+    iter = croniter(cron_string, datetime.now())
+    next_update = iter.get_next(datetime)
+    logger.info(f"Next update at {next_update.strftime('%d.%m %H:%M')}")
+    await asyncio.sleep(next_update.timestamp() - time.time())
     # Start the loop
     try:
         while True:
