@@ -6,4 +6,6 @@ services:
     container_name: DiscordBot
     volumes:
       - ./settings.yaml:/app/settings.yaml
+    environment:
+      TZ: "Europe/Zurich"
     restart: unless-stopped
