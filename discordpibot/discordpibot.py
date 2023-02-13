@@ -21,7 +21,7 @@ def prepareMessage(added_products: dict, removed_products: dict, current_product
     # If there is nothing to report, return a string that indicates that
 
     if not added_products and not removed_products and not current_products:
-        return f"No changes to report.\n Next update at {next_update.strftime('%H:%M %Z on the %d.%m')}"
+        return f"There is nothing selling, and nothing was removed.\nNext update at {next_update.strftime('%H:%M %Z on the %d.%m')}"
     message = "Scanning the feed for updates, here is the current state:\n"
     if added_products:
         message += "New entries:\n"
