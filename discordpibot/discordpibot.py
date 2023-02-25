@@ -9,19 +9,31 @@ from .logging import logger
 from .entry import Entry, field_names, EntryEncoder
 from croniter import croniter
 from datetime import datetime
+from typing import Tuple
 
 
 ##
 # Setup functions
 ##
 
-
-def prepareMessage(added_products: dict, removed_products: dict, current_products: dict, next_update: datetime) -> str:
+# returns a bool and a str
+def prepareMessage(
+    added_products: dict, removed_products: dict, current_products: dict, next_update: datetime
+) -> Tuple[bool, str]:
+    """
+    Prepare a message to be sent to discord.
+    :param added_products: A dictionary of the added products
+    :param removed_products: A dictionary of the removed products
+    :param current_products: A dictionary of the current products
+    :param next_update: The next update time
+    :return: A tuple of a bool and a string. The bool indicates if a message should be sent, and the string is the message.
+    """
     # Send one big message with all the new products, removed products, and current products, as a sort of update on the current state of the feed.
     # If there is nothing to report, return a string that indicates that
 
     if not added_products and not removed_products and not current_products:
-        return f"There is nothing selling, and nothing was removed.\nNext update at {next_update.strftime('%H:%M %Z on the %d.%m')}"
+        logger.info("No new or removed products, not sending a message.")
+        return False, ""
     message = "Scanning the feed for updates, here is the current state:\n"
     if added_products:
         message += "New entries:\n"
@@ -38,7 +50,7 @@ def prepareMessage(added_products: dict, removed_products: dict, current_product
     # add next update time (not in seconds but the actual time)
     # print next update time, full (so day.month, hour:minute)
     message += f"Next update at {next_update.strftime('%H:%M %Z on the %d.%m')}"
-    return message
+    return True, message
 
 
 async def feedWatcher(next_update: datetime):
@@ -54,9 +66,6 @@ async def feedWatcher(next_update: datetime):
     # Compare feed entries to control list.
     # If there are new entries, send a message/push
     # and add the new entry to new control list.
-    # TODO remove this line once code is working
-    await client.get_channel(channel_id).send("Checking feed...")
-
     current_products = {}
     # Convert the JSON array to a list of Product objects
     new_products = [Entry(**{name: p.get(name) for name in field_names}) for p in f.entries]
@@ -65,8 +74,8 @@ async def feedWatcher(next_update: datetime):
         current_products[product.id] = product
     added_products = {k: v for k, v in current_products.items() if k not in prev_products}
     removed_products = {k: v for k, v in prev_products.items() if k not in current_products}
-    message = prepareMessage(added_products, removed_products, current_products, next_update)
-    if message:
+    shouldBeSent, message = prepareMessage(added_products, removed_products, current_products, next_update)
+    if shouldBeSent:
         await client.get_channel(channel_id).send(message)
     prev_products = current_products
 
