@@ -90,17 +90,20 @@ async def on_ready():
     logger.info(f"{client.user} has connected to Discord!")
     iter = croniter(cron_string, datetime.now(tz=timezone))
     next_update = iter.get_next(datetime)
-    logger.info(f"Next update at {next_update.strftime('%H:%M %Z on the %d.%m')}")
-    await asyncio.sleep(next_update.timestamp() - time.time())
     # Start the loop
     try:
         while True:
-            iter = croniter(cron_string, datetime.now(tz=timezone))
-            next_update = iter.get_next(datetime)
-            await feedWatcher(next_update)
-            logger.info(f"Main func Sleeping until {next_update.strftime('%H:%M %Z on the %d.%m')}")
-            await asyncio.sleep(next_update.timestamp() - time.time())
-
+            now = datetime.now(tz=timezone)
+            time_remaining = (next_update - now).total_seconds()
+            if time_remaining <= 0:
+                # If the scheduled time has passed, update immediately
+                await feedWatcher(next_update)
+                iter = croniter(cron_string, datetime.now(tz=timezone))
+                next_update = iter.get_next(datetime)
+            else:
+                # If there is time remaining until the scheduled time, sleep for that duration
+                logger.info(f"Main func Sleeping until {next_update.strftime('%H:%M %Z on the %d.%m')}")
+                await asyncio.sleep(time_remaining)
     except Exception as e:
         logger.error(f"Error in feedWatcher: {e}")
 
