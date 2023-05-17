@@ -1,0 +1,12 @@
+site_name: Pi checking Discord bot
+
+nav: 
+  - Home: index.md
+  - Installation: installation.md
+  - Code : code.md
+
+plugins:
+  - mkdocstrings
+  
+theme: 
+  name: readthedocs
