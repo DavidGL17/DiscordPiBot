@@ -17,9 +17,15 @@ pytz = "^2022.7.1"
 pytest = "^7.2.0"
 flake8 = "^5.0.4"
 black = "^22.10.0"
+poethepoet = "^0.18.1"
 
 [tool.poetry.scripts]
 discordpibot = "discordpibot.discordpibot:main"
+
+[tool.poe.tasks]
+lint = "poetry run flake8 discordpibot tests"
+test = "poetry run pytest tests"
+format = "poetry run black discordpibot tests --line-length 120 --check"
 
 [build-system]
 requires = ["poetry-core"]
