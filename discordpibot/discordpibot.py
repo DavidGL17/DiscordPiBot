@@ -114,6 +114,11 @@ async def on_ready():
                 await asyncio.sleep(time_remaining)
     except Exception as e:
         logger.error(f"Error in feedWatcher: {e}")
+        # log the stack trace as well
+        logger.exception(e)
+        # close client and exit
+        await client.close()
+        exit(1)
 
 
 # Main program
