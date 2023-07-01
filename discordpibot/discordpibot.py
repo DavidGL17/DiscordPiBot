@@ -30,7 +30,7 @@ def prepareMessage(
     # Send one big message with all the new products, removed products, and current products, as a sort of update on the current state of the feed.
     # If there is nothing to report, return a string that indicates that
 
-    if not added_products and not removed_products and not current_products:
+    if not added_products and not removed_products:
         logger.info("No new or removed products, not sending a message.")
         return False, ""
     message = "Scanning the feed for updates, here is the current state:\n"
@@ -73,14 +73,18 @@ async def feedWatcher(next_update: datetime):
         current_products[product.id] = product
     added_products = {k: v for k, v in current_products.items() if k not in prev_products}
     removed_products = {k: v for k, v in prev_products.items() if k not in current_products}
+    # remove added products from current products (so we only have the ones that are still active)
+    for product in added_products:
+        current_products.pop(product, None)
     shouldBeSent, message = prepareMessage(added_products, removed_products, current_products, next_update)
     if shouldBeSent:
         await client.get_channel(channel_id).send(message)
-    prev_products = current_products
+    # Update the current products to the new products
+    current_products.update(added_products)
 
     # Write the new control list to the control file
     with open(control_file, "w") as controlFile:
-        json.dump(prev_products, controlFile, indent=4, cls=EntryEncoder)
+        json.dump(current_products, controlFile, indent=4, cls=EntryEncoder)
     logger.info(
         f"Checking done! warned for {len(added_products)} new items, and {len(removed_products)} removed items. Currently have {len(current_products)} items."
     )
